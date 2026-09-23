@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HindhoklaOS 1.1</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="bootScreen" class="screen">
+    <div class="boot-shell">
+      <header class="brand-row">
+        <div>
+          <div class="brand">HINDHOKLAOS</div>
+          <div class="version">VERSION 1.1 • SECURE BOOT</div>
+        </div>
+        <div id="bootClock" class="mono">--:--:--</div>
+      </header>
+
+      <main class="boot-grid">
+        <section class="boot-main">
+          <div class="section-title">HARDWARE DETECTION <span id="hardwareStatus">SCANNING</span></div>
+          <div class="subtle">Probing virtual devices</div>
+          <div class="progress"><div id="hardwareBar"></div></div>
+
+          <div class="kernel-panel">
+            <div class="section-title">KERNEL LOG</div>
+            <div id="kernelLog" class="kernel-log" aria-live="polite"></div>
+          </div>
+
+          <div class="boot-hint" id="bootHint">Press SPACE to open the scrolling boot log</div>
+        </section>
+
+        <aside class="boot-side">
+          <div class="status-card">
+            <div class="section-title">HARDWARE</div>
+            <div class="check-row"><span>Virtual CPU</span><b id="cpuCheck">WAIT</b></div>
+            <div class="check-row"><span>Memory</span><b id="memoryCheck">WAIT</b></div>
+            <div class="check-row"><span>Display</span><b id="displayCheck">WAIT</b></div>
+            <div class="check-row"><span>Input</span><b id="inputCheck">WAIT</b></div>
+          </div>
+
+          <div class="status-card">
+            <div class="section-title">FILESYSTEM</div>
+            <div class="check-row"><span>Root volume</span><b id="fsRoot">WAIT</b></div>
+            <div class="check-row"><span>Home volume</span><b id="fsHome">WAIT</b></div>
+            <div class="check-row"><span>Integrity</span><b id="fsIntegrity">WAIT</b></div>
+          </div>
+
+          <div class="status-card">
+            <div class="section-title">SERVICES</div>
+            <div class="check-row"><span>Window manager</span><b id="svcWindow">WAIT</b></div>
+            <div class="check-row"><span>App manager</span><b id="svcApps">WAIT</b></div>
+            <div class="check-row"><span>Notification bus</span><b id="svcNotify">WAIT</b></div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="boot-footer">
+        <span id="bootState">HKO KERNEL • INITIALIZING</span>
+        <span id="bootProgressText">0%</span>
+      </footer>
+    </div>
+  </div>
+
+  <div id="loginScreen" class="screen hidden">
+    <div class="login-card">
+      <div class="login-logo">H</div>
+      <div class="brand">HINDHOKLAOS</div>
+      <div class="version">VERSION 1.1</div>
+      <div class="login-user">vihaan</div>
+      <button id="loginButton" class="primary">ENTER SYSTEM</button>
+      <div class="login-note">Local virtual session • Secure boot verified</div>
+    </div>
+  </div>
+
+  <div id="desktop" class="hidden">
+    <div id="wallpaper"></div>
+    <div id="desktopIcons" class="desktop-icons"></div>
+    <div id="windows"></div>
+
+    <div id="taskbar">
+      <button id="startButton" class="task-button start-button">H</button>
+      <div id="taskApps"></div>
+      <div class="task-spacer"></div>
+      <button id="clockButton" class="task-button clock-button">--:--</button>
+    </div>
+
+    <div id="startMenu" class="start-menu hidden">
+      <div class="start-head">
+        <div class="start-logo">H</div>
+        <div><b>HINDHOKLAOS</b><small>1.1</small></div>
+      </div>
+      <input id="appSearch" placeholder="Search apps..." autocomplete="off">
+      <div id="appList" class="app-list"></div>
+    </div>
+
+    <div id="notificationArea"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
