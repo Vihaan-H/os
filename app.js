@@ -572,7 +572,7 @@ function browserView(body) {
   const url = $("#url", body), page = $("#page", body);
   const go = () => {
     const value = url.value.trim();
-    if (value === "hko://system") page.innerHTML = "<b>System</b><p class='muted'>Kernel: HKO 5.0<br>Session: ${getAccount()?.username || "user"}<br>Filesystem: mounted<br>Services: running</p>";
+    if (value === "hko://system") page.innerHTML = "<b>System</b><p class='muted'>Kernel: HKO 5.0<br>Session: " + esc(getAccount()?.username || "user") + "<br>Filesystem: mounted<br>Services: running</p>";
     else if (value === "hko://apps") page.innerHTML = "<b>Applications</b><p class='muted'>" + apps.map(a => esc(a[1])).join(" • ") + "</p>";
     else page.innerHTML = "<b>Hindhokla Home</b><p class='muted'>Welcome to the local virtual web.</p>";
   };
