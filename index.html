@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#050805">
-  <title>HindhoklaOS 4.0</title>
+  <title>HindhoklaOS 5.0</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
       <header class="brand-row">
         <div>
           <div class="brand">HINDHOKLAOS</div>
-          <div class="version">VERSION 4.0 • SECURE BOOT</div>
+          <div class="version">VERSION 5.0 • SECURE BOOT</div>
         </div>
         <div id="bootClock" class="mono">--:--:--</div>
       </header>
@@ -61,15 +61,33 @@
     </div>
   </div>
 
+  <div id="setupScreen" class="screen hidden">
+    <div class="setup-card">
+      <div class="login-logo">H</div>
+      <div class="brand">INITIAL SETUP</div>
+      <div class="version">HINDHOKLAOS 5.0 • CREATE YOUR LOCAL ACCOUNT</div>
+      <div class="setup-step"><span class="step-active">01</span><span>ACCOUNT</span><i></i><span>02</span><span>READY</span></div>
+      <label>USERNAME<input id="setupUsername" autocomplete="username" maxlength="24" placeholder="Choose a username"></label>
+      <label>PASSWORD<input id="setupPassword" type="password" autocomplete="new-password" placeholder="Create a password"></label>
+      <label>CONFIRM PASSWORD<input id="setupPasswordConfirm" type="password" autocomplete="new-password" placeholder="Enter it again"></label>
+      <div id="setupPasswordMeter" class="password-meter"><span></span></div>
+      <div id="setupMessage" class="setup-message">Your account is stored locally on this device.</div>
+      <button id="setupButton" class="primary">CREATE ACCOUNT</button>
+      <div class="login-note">This is a local virtual account. Your password is not sent to a server.</div>
+    </div>
+  </div>
+
   <div id="loginScreen" class="screen hidden">
     <div class="login-card">
       <div class="login-logo">H</div>
       <div class="brand">HINDHOKLAOS</div>
-      <div class="version">VERSION 4.0</div>
-      <div class="login-user">vihaan</div>
-      <div class="login-status"><span></span> SECURE SESSION READY</div>
-      <button id="loginButton" class="primary">ENTER SYSTEM</button>
-      <div class="login-note">Local virtual session • No network credentials required</div>
+      <div class="version">VERSION 5.0</div>
+      <div class="login-user" id="loginUsername">USER</div>
+      <label class="login-password-label">PASSWORD<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password"></label>
+      <div id="loginMessage" class="login-message">SECURE SESSION READY</div>
+      <button id="loginButton" class="primary">SIGN IN</button>
+      <button id="switchUserButton" class="secondary-button">RESET LOCAL ACCOUNT</button>
+      <div class="login-note">Local virtual session • Password protected on this device</div>
     </div>
   </div>
 
@@ -99,7 +117,7 @@
     <div id="startMenu" class="start-menu hidden">
       <div class="start-head">
         <div class="start-logo">H</div>
-        <div><b>HINDHOKLAOS</b><small>4.0 • vihaan</small></div>
+        <div><b>HINDHOKLAOS</b><small>5.0 • USER</small></div>
         <button id="shutdownButton" class="tiny-button">×</button>
       </div>
       <input id="appSearch" placeholder="Search apps, tools, settings..." autocomplete="off">
