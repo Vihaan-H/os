@@ -522,17 +522,17 @@ function filesView(body) {
     }
   };
   $("#newFile", body).onclick = () => {
-    const file = prompt("Virtual path:", "/home/vihaan/new.txt");
+    const file = prompt("Virtual path:", userHome() + "/new.txt");
     if (file) { state.fs[file] = ""; saveFS(); render(); }
   };
   render();
 }
 
 function terminalView(body) {
-  body.innerHTML = '<pre class="terminal" id="termOut"></pre><input class="terminal-input" id="termInput" placeholder="hko@vihaan:~$ " autocomplete="off">';
+  body.innerHTML = '<pre class="terminal" id="termOut"></pre><input class="terminal-input" id="termInput" placeholder="hko@user:~$ " autocomplete="off">';
   const out = $("#termOut", body), input = $("#termInput", body);
   const print = text => { out.textContent += String(text) + "\n"; out.scrollTop = out.scrollHeight; };
-  print("HindhoklaOS Terminal 4.0");
+  print("HindhoklaOS Terminal 5.0");
   print("Type help for commands.");
   input.focus();
 
@@ -540,7 +540,7 @@ function terminalView(body) {
     if (e.key !== "Enter") return;
     const raw = input.value.trim();
     input.value = "";
-    print("hko@vihaan:~$ " + raw);
+    print("hko@" + (getAccount()?.username || "user") + ":~$ " + raw);
     if (!raw) return;
     const [command, ...parts] = raw.split(/\s+/);
     const arg = parts.join(" ");
@@ -550,7 +550,7 @@ function terminalView(body) {
       case "ls": Object.keys(state.fs).forEach(p => print(p)); break;
       case "cat": print(state.fs[arg] ?? "File not found."); break;
       case "date": print(new Date().toString()); break;
-      case "whoami": print("vihaan"); break;
+      case "whoami": print(getAccount()?.username || "user"); break;
       case "sysinfo": print("HindhoklaOS 5.0 | HKO kernel | " + state.windows.size + " windows"); break;
       case "open": if (apps.some(a => a[0] === arg)) openApp(arg); else print("Usage: open <app-id>"); break;
       case "touch": if (arg) { state.fs[arg] = ""; saveFS(); print("Created " + arg); } break;
@@ -572,7 +572,7 @@ function browserView(body) {
   const url = $("#url", body), page = $("#page", body);
   const go = () => {
     const value = url.value.trim();
-    if (value === "hko://system") page.innerHTML = "<b>System</b><p class='muted'>Kernel: HKO 4.0<br>Session: vihaan<br>Filesystem: mounted<br>Services: running</p>";
+    if (value === "hko://system") page.innerHTML = "<b>System</b><p class='muted'>Kernel: HKO 5.0<br>Session: ${getAccount()?.username || "user"}<br>Filesystem: mounted<br>Services: running</p>";
     else if (value === "hko://apps") page.innerHTML = "<b>Applications</b><p class='muted'>" + apps.map(a => esc(a[1])).join(" • ") + "</p>";
     else page.innerHTML = "<b>Hindhokla Home</b><p class='muted'>Welcome to the local virtual web.</p>";
   };
@@ -701,12 +701,14 @@ function init() {
 
   $$(".quick-card").forEach(card => card.onclick = () => toggleControl(card.dataset.toggle));
 
-  $("#loginButton").onclick = () => {
-    $("#loginScreen")?.classList.add("hidden");
-    $("#desktop")?.classList.remove("hidden");
-    notify("Welcome back, vihaan.");
-    openApp("files");
-  };
+  $("#setupButton").onclick = createLocalAccount;
+  $("#setupPassword").oninput = updatePasswordMeter;
+  $("#setupPasswordConfirm").oninput = updatePasswordMeter;
+  $("#loginButton").onclick = loginLocalAccount;
+  $("#loginPassword").addEventListener("keydown", e => {
+    if (e.key === "Enter") loginLocalAccount();
+  });
+  $("#switchUserButton").onclick = resetLocalAccount;
 
   $("#startButton").onclick = () => {
     $("#startMenu")?.classList.toggle("hidden");
@@ -730,7 +732,15 @@ function init() {
   $("#clearNotifications").onclick = () => { state.notifications = []; renderNotifications(); };
   $("#shutdownButton").onclick = () => location.reload();
 
-  document.addEventListener("keydown", e => {\n    if (e.code === "Space" && !$("#bootScreen")?.classList.contains("hidden")) {\n      e.preventDefault();\n      state.fastBoot = true;\n      startScrolling();\n    }\n  });\n\n  document.addEventListener("click", e => {
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space" && !$("#bootScreen")?.classList.contains("hidden")) {
+      e.preventDefault();
+      state.fastBoot = true;
+      startScrolling();
+    }
+  });
+
+  document.addEventListener("click", e => {
     const menu = $("#startMenu"), start = $("#startButton");
     if (menu && start && !menu.contains(e.target) && !start.contains(e.target)) menu.classList.add("hidden");
   });
@@ -745,7 +755,7 @@ function showFatalError(error) {
   }
   setTimeout(() => {
     $("#bootScreen")?.classList.add("hidden");
-    $("#loginScreen")?.classList.remove("hidden");
+    showAuthScreen();
   }, 1200);
 }
 
