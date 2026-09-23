@@ -17,8 +17,6 @@ const defaultSettings = { theme: "neon", grid: true, compact: false, sound: fals
 
 const ACCOUNT_KEY = "hko_account_50";
 const LOCKOUT_KEY = "hko_login_lock_50";
-const accountData = safeLoad(ACCOUNT_KEY, null);
-const loginLock = safeLoad(LOCKOUT_KEY, { attempts: 0, until: 0 });
 
 async function hashPassword(password) {
   const data = new TextEncoder().encode(password);
@@ -178,6 +176,7 @@ function safeSave(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
 }
 
+// Phase 0 account constants are intentionally initialized after the storage helpers.\n
 const state = {
   fs: safeLoad("hko_fs_50", { ...fallbackFS }),
   settings: { ...defaultSettings, ...safeLoad("hko_settings_50", {}) },
