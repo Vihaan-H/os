@@ -14,6 +14,20 @@ HindhoklaOS is a browser-based simulated operating system built with plain HTML,
 - User-specific virtual home path
 - Account data stays local to the browser; no server credentials are used
 
+## 5.0 Phase 1–12 build
+- Phase 1: upgraded desktop, taskbar and virtual window workflow
+- Phase 2: expanded virtual filesystem with Trash, search and folders
+- Phase 3: Terminal 2.0 with history, tab completion and filesystem commands
+- Phase 4: Browser with virtual HKO pages, bookmarks and history
+- Phase 5: Code/Files workflow and shared virtual filesystem
+- Phase 6: Control Center, themes, wallpaper and keyboard shortcuts
+- Phase 7: Notifications, recent activity and system monitoring
+- Phase 8: App Store foundation and installable local applications
+- Phase 9: Notes and Calendar productivity apps
+- Phase 10: Developer Console and simulated process/system inspection
+- Phase 11: persistence, recovery-oriented local storage and responsive UI polish
+- Phase 12: integrated release polish, shortcuts, widgets and Easter-egg-ready architecture
+
 ## 5.0 foundation
 - 5–10 second secure boot
 - Spacebar boot-log scrolling and accelerated boot
