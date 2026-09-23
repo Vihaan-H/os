@@ -1,8 +1,8 @@
-# HindhoklaOS 2.0
+# HindhoklaOS 3.0
 
 HindhoklaOS is a browser-based simulated operating system built with plain HTML, CSS and JavaScript. No backend and no Base44.
 
-## 2.0 highlights
+## 3.0 highlights
 - Old-school compact secure boot restored and expanded
 - 5–10 second believable boot sequence
 - Progressive hardware, filesystem and service checks
@@ -24,3 +24,6 @@ Open `index.html` in a browser, or use any static server in GitHub Codespaces.
 
 ## Architecture
 Everything is local to the browser. The filesystem and settings use localStorage. Network, browser, kernel and hardware are intentionally simulated.
+
+## 3.0 boot fix
+Startup is guarded against DOM timing errors, storage keys are versioned, and a recovery path opens the login screen if startup throws an exception.
