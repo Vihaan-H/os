@@ -2,7 +2,8 @@
 "use strict";
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const fallbackFS={
-"/home/vihaan/readme.txt":"Welcome to HindhoklaOS 3.0.\nThis is your local virtual system.",
+"/home/vihaan/readme.txt":"Welcome to HindhoklaOS 3.0.
+This is your local virtual system.",
 "/home/vihaan/notes.txt":"HindhoklaOS 3.0 notes",
 "/projects/hello/index.html":"<h1>Hello from HindhoklaOS</h1>",
 "/projects/hello/style.css":"body { font-family: sans-serif; }",
@@ -100,7 +101,8 @@ function filesView(b){
  $("#saveFile",b).onclick=()=>{if(cur){state.fs[cur]=ed.value;saveFS();notify("File saved.")}};$("#deleteFile",b).onclick=()=>{if(cur&&confirm("Delete "+cur+"?")){delete state.fs[cur];cur=null;ed.value="";path.textContent="Select a file";saveFS();render()}};$("#newFile",b).onclick=()=>{const p=prompt("Virtual path:","/home/vihaan/new.txt");if(p){state.fs[p]="";saveFS();render()}}
 }
 function terminalView(b){
- b.innerHTML='<pre class="terminal" id="termOut"></pre><input class="terminal-input" id="termInput" placeholder="hko@vihaan:~$ " autocomplete="off">';const out=$("#termOut",b),inpt=$("#termInput",b),print=x=>{out.textContent+=x+"\n";out.scrollTop=out.scrollHeight};print("HindhoklaOS Terminal 3.0");print("Type help for commands.");inpt.focus();
+ b.innerHTML='<pre class="terminal" id="termOut"></pre><input class="terminal-input" id="termInput" placeholder="hko@vihaan:~$ " autocomplete="off">';const out=$("#termOut",b),inpt=$("#termInput",b),print=x=>{out.textContent+=x+"
+";out.scrollTop=out.scrollHeight};print("HindhoklaOS Terminal 3.0");print("Type help for commands.");inpt.focus();
  inpt.onkeydown=e=>{if(e.key!=="Enter")return;const raw=inpt.value.trim();inpt.value="";print("hko@vihaan:~$ "+raw);const [c,...args]=raw.split(" "),arg=args.join(" ");switch(c){
  case"help":print("help clear ls cat date whoami sysinfo open mkdir touch rm echo reboot");break;case"clear":out.textContent="";break;case"ls":Object.keys(state.fs).forEach(p=>print(p));break;case"cat":print(state.fs[arg]??"File not found.");break;case"date":print(new Date().toString());break;case"whoami":print("vihaan");break;case"sysinfo":print("HindhoklaOS 3.0 | virtual kernel | "+state.windows.size+" windows");break;case"open":if(arg&&apps.some(a=>a[0]===arg)){openApp(arg)}else print("Usage: open <app-id>");break;case"mkdir":print("Directory containers are represented by path prefixes in the virtual filesystem.");break;case"touch":if(arg){state.fs[arg]="";saveFS();print("Created "+arg)}break;case"rm":if(Object.prototype.hasOwnProperty.call(state.fs,arg)){delete state.fs[arg];saveFS();print("Removed "+arg)}else print("File not found.");break;case"echo":print(arg);break;case"reboot":location.reload();break;default:if(c)print("Command not found. Type help.")}}
 }
@@ -108,8 +110,20 @@ function browserView(b){b.innerHTML='<div class="app-toolbar"><input id="url" st
 function codeView(b){b.innerHTML='<div class="app-toolbar"><select id="codeFile"></select><button class="tool-btn" id="saveCode">Save</button><button class="tool-btn" id="runCode">Run</button></div><textarea class="editor" id="codeEditor"></textarea><div id="codeOutput" class="muted"></div>';const s=$("#codeFile",b),e=$("#codeEditor",b),o=$("#codeOutput",b);Object.keys(state.fs).filter(p=>/\.(html|css|js|txt)$/.test(p)).forEach(p=>{const x=document.createElement("option");x.value=p;x.textContent=p;s.appendChild(x)});const load=()=>e.value=state.fs[s.value]||"";s.onchange=load;load();$("#saveCode",b).onclick=()=>{state.fs[s.value]=e.value;saveFS();notify("Code saved.")};$("#runCode",b).onclick=()=>{o.textContent="Executed "+s.value+" in the virtual workspace.";notify("Code Studio run complete.")}
 }
 function debugView(b){b.innerHTML='<div class="card-grid"><div class="mini-card"><b>'+Object.keys(state.fs).length+'</b><small>files scanned</small></div><div class="mini-card"><b>0</b><small>boot blockers</small></div><div class="mini-card"><b>PASS</b><small>integrity</small></div></div><p class="muted">Debug Detective scans the virtual filesystem and current session state.</p>'}
-function networkView(b){b.innerHTML='<div class="card-grid"><div class="mini-card"><b>LOOP</b><small>virtual adapter</small></div><div class="mini-card"><b>127.0.0.1</b><small>local endpoint</small></div><div class="mini-card"><b>ONLINE</b><small>simulated network</small></div></div><button class="tool-btn" id="ping" style="margin-top:12px">Ping local host</button><pre class="terminal" id="pingOut"></pre>';$("#ping",b).onclick=()=>{$("#pingOut",b).textContent="PING 127.0.0.1\n64 bytes • 1ms\n64 bytes • 1ms\n64 bytes • 2ms\n3 packets transmitted, 3 received, 0% loss."}}
-function packetView(b){b.innerHTML='<div class="app-toolbar"><button class="tool-btn" id="trace">Trace packet</button></div><pre class="terminal" id="traceOut">Ready.</pre>';$("#trace",b).onclick=()=>$("#traceOut",b).textContent="Packet created\n  ↓\nVirtual NIC\n  ↓\nHKO Router\n  ↓\nDestination\n\nTrace complete."}
+function networkView(b){b.innerHTML='<div class="card-grid"><div class="mini-card"><b>LOOP</b><small>virtual adapter</small></div><div class="mini-card"><b>127.0.0.1</b><small>local endpoint</small></div><div class="mini-card"><b>ONLINE</b><small>simulated network</small></div></div><button class="tool-btn" id="ping" style="margin-top:12px">Ping local host</button><pre class="terminal" id="pingOut"></pre>';$("#ping",b).onclick=()=>{$("#pingOut",b).textContent="PING 127.0.0.1
+64 bytes • 1ms
+64 bytes • 1ms
+64 bytes • 2ms
+3 packets transmitted, 3 received, 0% loss."}}
+function packetView(b){b.innerHTML='<div class="app-toolbar"><button class="tool-btn" id="trace">Trace packet</button></div><pre class="terminal" id="traceOut">Ready.</pre>';$("#trace",b).onclick=()=>$("#traceOut",b).textContent="Packet created
+  ↓
+Virtual NIC
+  ↓
+HKO Router
+  ↓
+Destination
+
+Trace complete."}
 function uiView(b){b.innerHTML='<div class="mini-card"><b>UI ARCHAEOLOGIST</b><p class="muted">Inspect interface structure, spacing, controls and interaction states. This 2.0 build uses the same glass/terminal design language throughout the system.</p></div>'}
 function museumView(b){b.innerHTML='<div class="card-grid"><div class="mini-card"><b>WEB 1.0</b><small>Static pages and guestbooks</small></div><div class="mini-card"><b>SEARCH</b><small>Directories before modern search</small></div><div class="mini-card"><b>WEB APPS</b><small>The browser became the platform</small></div></div>'}
 function softwareView(b){b.innerHTML='<div class="card-grid"><div class="mini-card"><b>1980s</b><small>Desktop software</small></div><div class="mini-card"><b>1990s</b><small>Shareware and boxed apps</small></div><div class="mini-card"><b>2000s</b><small>Web applications</small></div></div>'}
@@ -124,5 +138,6 @@ function paintView(b){b.innerHTML='<canvas class="paint" width="900" height="520
 function calculatorView(b){b.innerHTML='<div class="calc"><div class="calc-display" id="calcDisplay">0</div><div class="calc-grid">'+["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+","C"].map(x=>"<button>"+x+"</button>").join("")+"</div></div>";const d=$("#calcDisplay",b);let expr="";$$("button",b).forEach(x=>x.onclick=()=>{const v=x.textContent;if(v==="C")expr="";else if(v==="="){try{expr=String(Function("return "+expr)())}catch{expr="ERR"}}else expr+=v;d.textContent=expr||"0"})}
 function mediaView(b){b.innerHTML='<div class="mini-card"><b>MEDIA PLAYER</b><p class="muted">Local playback surface ready.</p><button class="tool-btn" id="play">▶ Play</button><button class="tool-btn" id="pause">Ⅱ Pause</button><p id="mediaStatus" class="muted">Stopped</p></div>';$("#play",b).onclick=()=>$("#mediaStatus",b).textContent="Playing";$("#pause",b).onclick=()=>$("#mediaStatus",b).textContent="Paused"}
 function clockView(b){b.innerHTML='<div class="mini-card" style="text-align:center"><b id="bigClock">--:--:--</b><small id="bigDate"></small></div>';const tick=()=>{const d=new Date();$("#bigClock",b).textContent=d.toLocaleTimeString([],{hour12:false});$("#bigDate",b).textContent=d.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"})};tick();setInterval(tick,1000)}
-function startSystem(){try{init();boot()}catch(err){console.error(err);const h=$("#bootHint");if(h){h.textContent="BOOT ERROR • "+err.message;h.style.color="#ff6f6f"}setTimeout(()=>{const b=$("#bootScreen"),l=$("#loginScreen");if(b)b.classList.add("hidden");if(l)l.classList.remove("hidden")},1200)}}\nif(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startSystem,{once:true});else startSystem();
+function startSystem(){try{init();boot()}catch(err){console.error(err);const h=$("#bootHint");if(h){h.textContent="BOOT ERROR • "+err.message;h.style.color="#ff6f6f"}setTimeout(()=>{const b=$("#bootScreen"),l=$("#loginScreen");if(b)b.classList.add("hidden");if(l)l.classList.remove("hidden")},1200)}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startSystem,{once:true});else startSystem();
 })();
