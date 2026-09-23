@@ -6,14 +6,164 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const fallbackFS = {
-  "/home/vihaan/readme.txt": "Welcome to HindhoklaOS 4.0.\nThis is your local virtual system.",
-  "/home/vihaan/notes.txt": "HindhoklaOS 4.0 notes",
+  "/home/user/readme.txt": "Welcome to HindhoklaOS 5.0.\nThis is your local virtual system.",
+  "/home/user/notes.txt": "HindhoklaOS 5.0 notes",
   "/projects/hello/index.html": "<h1>Hello from HindhoklaOS</h1>",
   "/projects/hello/style.css": "body { font-family: sans-serif; }",
   "/system/kernel.log": "HKO kernel initialized successfully."
 };
 
 const defaultSettings = { theme: "neon", grid: true, compact: false, sound: false };
+
+const ACCOUNT_KEY = "hko_account_50";
+const LOCKOUT_KEY = "hko_login_lock_50";
+const accountData = safeLoad(ACCOUNT_KEY, null);
+const loginLock = safeLoad(LOCKOUT_KEY, { attempts: 0, until: 0 });
+
+async function hashPassword(password) {
+  const data = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function getAccount() {
+  return safeLoad(ACCOUNT_KEY, null);
+}
+
+function userHome(username = getAccount()?.username || "user") {
+  return "/home/" + username;
+}
+
+function showAuthScreen() {
+  const setup = $("#setupScreen");
+  const login = $("#loginScreen");
+  const account = getAccount();
+  if (!account) {
+    setup?.classList.remove("hidden");
+    login?.classList.add("hidden");
+    return;
+  }
+  setup?.classList.add("hidden");
+  login?.classList.remove("hidden");
+  const username = $("#loginUsername");
+  if (username) username.textContent = account.username;
+  const password = $("#loginPassword");
+  if (password) {
+    password.value = "";
+    setTimeout(() => password.focus(), 50);
+  }
+}
+
+function setSetupMessage(message, error = false) {
+  const el = $("#setupMessage");
+  if (el) {
+    el.textContent = message;
+    el.classList.toggle("error", error);
+  }
+}
+
+function setLoginMessage(message, error = false) {
+  const el = $("#loginMessage");
+  if (el) {
+    el.textContent = message;
+    el.classList.toggle("error", error);
+  }
+}
+
+function passwordStrength(password) {
+  if (!password) return 0;
+  let score = Math.min(2, Math.floor(password.length / 4));
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  return Math.min(5, score);
+}
+
+function updatePasswordMeter() {
+  const password = $("#setupPassword")?.value || "";
+  const meter = $("#setupPasswordMeter");
+  if (!meter) return;
+  const score = passwordStrength(password);
+  meter.dataset.score = String(score);
+  const labels = ["", "WEAK", "WEAK", "FAIR", "GOOD", "STRONG"];
+  meter.querySelector("span").textContent = labels[score];
+}
+
+function migrateUserFiles(username) {
+  const next = {};
+  Object.entries(state.fs).forEach(([path, value]) => {
+    next[path.replace(/^\/home\/user(?=\/|$)/, "/home/" + username)] = value;
+  });
+  state.fs = next;
+  saveFS();
+}
+
+async function createLocalAccount() {
+  const username = ($("#setupUsername")?.value || "").trim().toLowerCase();
+  const password = $("#setupPassword")?.value || "";
+  const confirm = $("#setupPasswordConfirm")?.value || "";
+
+  if (!/^[a-z0-9][a-z0-9._-]{2,23}$/.test(username)) {
+    setSetupMessage("Username must be 3–24 characters: letters, numbers, ., _, or -.", true);
+    return;
+  }
+  if (password.length < 6) {
+    setSetupMessage("Password must be at least 6 characters.", true);
+    return;
+  }
+  if (password !== confirm) {
+    setSetupMessage("Passwords do not match.", true);
+    return;
+  }
+
+  const hash = await hashPassword(password);
+  safeSave(ACCOUNT_KEY, { username, passwordHash: hash, createdAt: new Date().toISOString() });
+  migrateUserFiles(username);
+  setSetupMessage("Account created. Preparing secure login...");
+  await sleep(500);
+  showAuthScreen();
+}
+
+async function loginLocalAccount() {
+  const account = getAccount();
+  if (!account) return showAuthScreen();
+  const password = $("#loginPassword")?.value || "";
+  const nowMs = Date.now();
+  const lock = safeLoad(LOCKOUT_KEY, { attempts: 0, until: 0 });
+  if (lock.until > nowMs) {
+    const seconds = Math.ceil((lock.until - nowMs) / 1000);
+    setLoginMessage("Too many attempts. Try again in " + seconds + "s.", true);
+    return;
+  }
+  if (!password) {
+    setLoginMessage("Enter your password.", true);
+    return;
+  }
+  const hash = await hashPassword(password);
+  if (hash !== account.passwordHash) {
+    const attempts = (lock.attempts || 0) + 1;
+    if (attempts >= 5) {
+      safeSave(LOCKOUT_KEY, { attempts: 0, until: Date.now() + 15000 });
+      setLoginMessage("Five failed attempts. Login paused for 15 seconds.", true);
+    } else {
+      safeSave(LOCKOUT_KEY, { attempts, until: 0 });
+      setLoginMessage("Incorrect password. Attempt " + attempts + " of 5.", true);
+    }
+    return;
+  }
+  safeSave(LOCKOUT_KEY, { attempts: 0, until: 0 });
+  $("#loginScreen")?.classList.add("hidden");
+  $("#desktop")?.classList.remove("hidden");
+  notify("Welcome back, " + account.username + ".");
+  openApp("files");
+}
+
+function resetLocalAccount() {
+  if (!confirm("Reset the local HindhoklaOS account? This returns the system to Initial Setup.")) return;
+  localStorage.removeItem(ACCOUNT_KEY);
+  localStorage.removeItem(LOCKOUT_KEY);
+  location.reload();
+}
 
 function safeLoad(key, fallback) {
   try {
@@ -29,8 +179,8 @@ function safeSave(key, value) {
 }
 
 const state = {
-  fs: safeLoad("hko_fs_40", { ...fallbackFS }),
-  settings: { ...defaultSettings, ...safeLoad("hko_settings_40", {}) },
+  fs: safeLoad("hko_fs_50", { ...fallbackFS }),
+  settings: { ...defaultSettings, ...safeLoad("hko_settings_50", {}) },
   windows: new Map(),
   z: 10,
   notifications: [],
@@ -99,14 +249,14 @@ async function boot() {
   state.bootStarted = true;
 
   const steps = [
-    ["HKO kernel 4.0 initializing...", "log", 260],
+    ["HKO kernel 5.0 initializing...", "log", 260],
     ["Probing virtual CPU...", "cpuCheck", 360],
     ["Detecting memory map...", "memoryCheck", 340],
     ["Negotiating virtual display bus...", "displayCheck", 340],
     ["Registering keyboard input...", "inputCheck", 300],
     ["Hardware detection complete.", "log", 260],
     ["Mounting root volume...", "fsRoot", 360],
-    ["Checking /home/vihaan...", "fsHome", 340],
+    ["Checking user home...", "fsHome", 340],
     ["Running filesystem integrity scan...", "fsIntegrity", 360],
     ["Filesystem checks passed.", "log", 260],
     ["Starting window manager...", "svcWindow", 340],
@@ -142,7 +292,7 @@ async function boot() {
   const bootState = $("#bootState");
   const hint = $("#bootHint");
   if (bootState) bootState.textContent = "HKO KERNEL • READY";
-  if (hint) hint.textContent = "BOOT COMPLETE • Launching login";
+  if (hint) hint.textContent = "BOOT COMPLETE • Loading account session";
   await sleep(450);
 
   const bootScreen = $("#bootScreen");
@@ -152,7 +302,7 @@ async function boot() {
   login.classList.remove("hidden");
 }
 
-function saveFS() { safeSave("hko_fs_40", state.fs); }
+function saveFS() { safeSave("hko_fs_50", state.fs); }
 
 function notify(message) {
   state.notifications.unshift({ msg: message, time: now() });
@@ -249,7 +399,7 @@ function toggleControl(key) {
   if (key === "compact") state.settings.compact = !state.settings.compact;
   if (key === "sound") state.settings.sound = !state.settings.sound;
   if (key === "theme") state.settings.theme = state.settings.theme === "neon" ? "ice" : "neon";
-  safeSave("hko_settings_40", state.settings);
+  safeSave("hko_settings_50", state.settings);
   applySettings();
   notify("Control center updated.");
 }
@@ -402,7 +552,7 @@ function terminalView(body) {
       case "cat": print(state.fs[arg] ?? "File not found."); break;
       case "date": print(new Date().toString()); break;
       case "whoami": print("vihaan"); break;
-      case "sysinfo": print("HindhoklaOS 4.0 | HKO kernel | " + state.windows.size + " windows"); break;
+      case "sysinfo": print("HindhoklaOS 5.0 | HKO kernel | " + state.windows.size + " windows"); break;
       case "open": if (apps.some(a => a[0] === arg)) openApp(arg); else print("Usage: open <app-id>"); break;
       case "touch": if (arg) { state.fs[arg] = ""; saveFS(); print("Created " + arg); } break;
       case "rm": if (Object.prototype.hasOwnProperty.call(state.fs, arg)) { delete state.fs[arg]; saveFS(); print("Removed " + arg); } else print("File not found."); break;
@@ -484,7 +634,7 @@ function clockView(body) {
 }
 
 function settingsView(body) {
-  body.innerHTML = '<div class="card-grid"><div class="mini-card"><b>THEME</b><small>Use Control Center to switch themes.</small></div><div class="mini-card"><b>PERSISTENCE</b><small>Settings and files are stored locally.</small></div><div class="mini-card"><b>VERSION</b><small>HindhoklaOS 4.0</small></div></div>';
+  body.innerHTML = '<div class="card-grid"><div class="mini-card"><b>THEME</b><small>Use Control Center to switch themes.</small></div><div class="mini-card"><b>PERSISTENCE</b><small>Settings and files are stored locally.</small></div><div class="mini-card"><b>VERSION</b><small>HindhoklaOS 5.0</small></div></div>';
 }
 
 function taskView(body) {
@@ -581,7 +731,7 @@ function init() {
   $("#clearNotifications").onclick = () => { state.notifications = []; renderNotifications(); };
   $("#shutdownButton").onclick = () => location.reload();
 
-  document.addEventListener("click", e => {
+  document.addEventListener("keydown", e => {\n    if (e.code === "Space" && !$("#bootScreen")?.classList.contains("hidden")) {\n      e.preventDefault();\n      state.fastBoot = true;\n      startScrolling();\n    }\n  });\n\n  document.addEventListener("click", e => {
     const menu = $("#startMenu"), start = $("#startButton");
     if (menu && start && !menu.contains(e.target) && !start.contains(e.target)) menu.classList.add("hidden");
   });
