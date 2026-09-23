@@ -3,59 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HindhoklaOS 1.1</title>
+  <meta name="theme-color" content="#050805">
+  <title>HindhoklaOS 2.0</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="bootScreen" class="screen">
+  <div id="bootScreen" class="screen boot-screen">
     <div class="boot-shell">
       <header class="brand-row">
         <div>
           <div class="brand">HINDHOKLAOS</div>
-          <div class="version">VERSION 1.1 • SECURE BOOT</div>
+          <div class="version">VERSION 2.0 • SECURE BOOT</div>
         </div>
         <div id="bootClock" class="mono">--:--:--</div>
       </header>
-
       <main class="boot-grid">
         <section class="boot-main">
           <div class="section-title">HARDWARE DETECTION <span id="hardwareStatus">SCANNING</span></div>
-          <div class="subtle">Probing virtual devices</div>
+          <div class="subtle">Probing virtual devices • kernel channel 0</div>
           <div class="progress"><div id="hardwareBar"></div></div>
-
           <div class="kernel-panel">
-            <div class="section-title">KERNEL LOG</div>
+            <div class="kernel-head">
+              <span class="section-title">KERNEL LOG</span>
+              <span id="scrollMode">AUTO-SCROLL</span>
+            </div>
             <div id="kernelLog" class="kernel-log" aria-live="polite"></div>
           </div>
-
-          <div class="boot-hint" id="bootHint">Press SPACE to open the scrolling boot log</div>
+          <div class="boot-hint" id="bootHint">SPACE • start/accelerate kernel log scrolling</div>
         </section>
-
         <aside class="boot-side">
           <div class="status-card">
             <div class="section-title">HARDWARE</div>
             <div class="check-row"><span>Virtual CPU</span><b id="cpuCheck">WAIT</b></div>
-            <div class="check-row"><span>Memory</span><b id="memoryCheck">WAIT</b></div>
-            <div class="check-row"><span>Display</span><b id="displayCheck">WAIT</b></div>
-            <div class="check-row"><span>Input</span><b id="inputCheck">WAIT</b></div>
+            <div class="check-row"><span>Memory map</span><b id="memoryCheck">WAIT</b></div>
+            <div class="check-row"><span>Display bus</span><b id="displayCheck">WAIT</b></div>
+            <div class="check-row"><span>Input bus</span><b id="inputCheck">WAIT</b></div>
           </div>
-
           <div class="status-card">
             <div class="section-title">FILESYSTEM</div>
             <div class="check-row"><span>Root volume</span><b id="fsRoot">WAIT</b></div>
             <div class="check-row"><span>Home volume</span><b id="fsHome">WAIT</b></div>
             <div class="check-row"><span>Integrity</span><b id="fsIntegrity">WAIT</b></div>
           </div>
-
           <div class="status-card">
             <div class="section-title">SERVICES</div>
             <div class="check-row"><span>Window manager</span><b id="svcWindow">WAIT</b></div>
             <div class="check-row"><span>App manager</span><b id="svcApps">WAIT</b></div>
             <div class="check-row"><span>Notification bus</span><b id="svcNotify">WAIT</b></div>
+            <div class="check-row"><span>Power manager</span><b id="svcPower">WAIT</b></div>
           </div>
         </aside>
       </main>
-
       <footer class="boot-footer">
         <span id="bootState">HKO KERNEL • INITIALIZING</span>
         <span id="bootProgressText">0%</span>
@@ -67,10 +65,11 @@
     <div class="login-card">
       <div class="login-logo">H</div>
       <div class="brand">HINDHOKLAOS</div>
-      <div class="version">VERSION 1.1</div>
+      <div class="version">VERSION 2.0</div>
       <div class="login-user">vihaan</div>
+      <div class="login-status"><span></span> SECURE SESSION READY</div>
       <button id="loginButton" class="primary">ENTER SYSTEM</button>
-      <div class="login-note">Local virtual session • Secure boot verified</div>
+      <div class="login-note">Local virtual session • No network credentials required</div>
     </div>
   </div>
 
@@ -78,26 +77,44 @@
     <div id="wallpaper"></div>
     <div id="desktopIcons" class="desktop-icons"></div>
     <div id="windows"></div>
+    <div id="quickPanel" class="quick-panel hidden">
+      <div class="quick-title"><b>CONTROL CENTER</b><span id="panelClock">--:--</span></div>
+      <div class="quick-grid">
+        <button class="quick-card active" data-toggle="theme"><b>NEON</b><small>Theme</small></button>
+        <button class="quick-card" data-toggle="grid"><b>GRID</b><small>Wallpaper</small></button>
+        <button class="quick-card" data-toggle="compact"><b>UI</b><small>Compact mode</small></button>
+        <button class="quick-card" data-toggle="sound"><b>SFX</b><small>Interface sound</small></button>
+      </div>
+      <div class="system-strip"><span>CPU <b id="quickCpu">12%</b></span><span>RAM <b id="quickRam">384 MB</b></span><span>UP <b id="quickUptime">0:00</b></span></div>
+    </div>
 
     <div id="taskbar">
       <button id="startButton" class="task-button start-button">H</button>
       <div id="taskApps"></div>
       <div class="task-spacer"></div>
+      <button id="notificationButton" class="task-button">◈</button>
       <button id="clockButton" class="task-button clock-button">--:--</button>
     </div>
 
     <div id="startMenu" class="start-menu hidden">
       <div class="start-head">
         <div class="start-logo">H</div>
-        <div><b>HINDHOKLAOS</b><small>1.1</small></div>
+        <div><b>HINDHOKLAOS</b><small>2.0 • vihaan</small></div>
+        <button id="shutdownButton" class="tiny-button">×</button>
       </div>
-      <input id="appSearch" placeholder="Search apps..." autocomplete="off">
+      <input id="appSearch" placeholder="Search apps, tools, settings..." autocomplete="off">
+      <div class="start-section">PINNED</div>
+      <div id="pinnedApps" class="pinned-apps"></div>
+      <div class="start-section">ALL APPLICATIONS</div>
       <div id="appList" class="app-list"></div>
     </div>
 
     <div id="notificationArea"></div>
+    <div id="notificationCenter" class="notification-center hidden">
+      <div class="nc-head"><b>NOTIFICATIONS</b><button id="clearNotifications" class="tiny-button">CLEAR</button></div>
+      <div id="notificationList"></div>
+    </div>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
